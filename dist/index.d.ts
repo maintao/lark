@@ -1,14 +1,16 @@
-export declare class Lark {
+declare class Core {
     #private;
     appId: string;
     appSecret: string;
+    apiDomain: string;
     accessToken: {
         value: string;
         expireAt: number;
     };
-    constructor({ appId, appSecret }: {
+    constructor({ appId, appSecret, apiDomain, }: {
         appId: string;
         appSecret: string;
+        apiDomain: string;
     });
     getAccessToken: () => Promise<string>;
     getBiTablePage: ({ appToken, tableId, pageToken, }: {
@@ -25,4 +27,17 @@ export declare class Lark {
         url: string;
     }[]>;
 }
+export declare class Feishu extends Core {
+    constructor({ appId, appSecret }: {
+        appId: string;
+        appSecret: string;
+    });
+}
+export declare class Lark extends Core {
+    constructor({ appId, appSecret }: {
+        appId: string;
+        appSecret: string;
+    });
+}
+export {};
 //# sourceMappingURL=index.d.ts.map

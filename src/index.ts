@@ -1,17 +1,27 @@
 import axios from "axios";
 import axiosRateLimit from "axios-rate-limit";
 
-export class Lark {
+class Core {
   appId: string;
   appSecret: string;
+  apiDomain: string;
   accessToken = {
     value: "",
     expireAt: Date.now(),
   };
 
-  constructor({ appId, appSecret }: { appId: string; appSecret: string }) {
+  constructor({
+    appId,
+    appSecret,
+    apiDomain,
+  }: {
+    appId: string;
+    appSecret: string;
+    apiDomain: string;
+  }) {
     this.appId = appId;
     this.appSecret = appSecret;
+    this.apiDomain = apiDomain;
   }
 
   getAccessToken = async (): Promise<string> => {
@@ -22,7 +32,7 @@ export class Lark {
 
     const response = await axios({
       method: "post",
-      url: "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+      url: `${this.apiDomain}/open-apis/auth/v3/tenant_access_token/internal`,
       data: {
         app_id: this.appId,
         app_secret: this.appSecret,
@@ -49,7 +59,7 @@ export class Lark {
     pageToken?: string;
   }): Promise<any> => {
     const response = await axios.get(
-      `https://open.feishu.cn/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
+      `${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
       {
         params: {
           page_size: 500, // 支持最大 page_size = 500
@@ -116,7 +126,7 @@ export class Lark {
 
     while ((buf = takeFive())) {
       const params = buf.map((fileToken) => `file_tokens=${fileToken}`).join("&");
-      const apiUrl = `https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?${params}`;
+      const apiUrl = `${this.apiDomain}/open-apis/drive/v1/medias/batch_get_tmp_download_url?${params}`;
 
       const response = await http.get(apiUrl, {
         headers: {
@@ -138,4 +148,16 @@ export class Lark {
 
     return ret;
   };
+}
+
+export class Feishu extends Core {
+  constructor({ appId, appSecret }: { appId: string; appSecret: string }) {
+    super({ appId, appSecret, apiDomain: "https://open.feishu.cn" });
+  }
+}
+
+export class Lark extends Core {
+  constructor({ appId, appSecret }: { appId: string; appSecret: string }) {
+    super({ appId, appSecret, apiDomain: "https://open.larksuite.com" });
+  }
 }
