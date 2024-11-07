@@ -52,28 +52,47 @@ class Core {
   getBiTablePage = async ({
     appToken,
     tableId,
+    viewId,
     pageToken,
+    mergeText = true, // 是否把文本类型的字符串数组合并成一个字符串
   }: {
     appToken: string;
     tableId: string;
+    viewId?: string;
     pageToken?: string;
+    mergeText?: boolean;
   }): Promise<any> => {
-    const response = await axios.get(
-      `${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
-      {
-        params: {
-          page_size: 500, // 支持最大 page_size = 500
-          pageToken,
-        },
-        headers: {
-          Authorization: `Bearer ${await this.getAccessToken()}`,
-        },
-      }
-    );
+    // 接口文档 https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/bitable-v1/app-table-record/search
+    const apiUrl = `${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records/search`;
+    const response = await axios({
+      method: "post",
+      url: apiUrl,
+      headers: {
+        Authorization: `Bearer ${await this.getAccessToken()}`,
+      },
+      params: {
+        page_size: 500, // 支持最大 page_size = 500
+        page_token: pageToken,
+      },
+      data: {
+        view_id: viewId,
+      },
+    });
 
     if (response.data.code !== 0) {
       throw new Error("获取飞书多维表格数据失败");
     }
+    // console.log(response.data.data.items.map((item: any) => item.fields));
+    if (mergeText) {
+      response.data.data.items.forEach((item: any) => {
+        Object.entries(item.fields).forEach(([key, value]) => {
+          if (Array.isArray(value) && value.every((f: any) => f.type === "text")) {
+            item.fields[key] = value.map((f: any) => f.text).join("");
+          }
+        });
+      });
+    }
+    // console.log(response.data.data.items.map((item: any) => item.fields));
 
     return response.data.data;
   };
@@ -81,11 +100,15 @@ class Core {
   getBiTableAllData = async ({
     appToken,
     tableId,
+    viewId,
+    mergeText = true,
   }: {
     appToken: string;
     tableId: string;
-  }): Promise<any> => {
-    const ret = [];
+    viewId?: string;
+    mergeText?: boolean;
+  }): Promise<any[]> => {
+    const ret: any[] = [];
     let pageToken;
     let hasMore = true;
 
@@ -93,7 +116,9 @@ class Core {
       const result: any = await this.getBiTablePage({
         appToken,
         tableId,
+        viewId,
         pageToken,
+        mergeText,
       });
       hasMore = result.has_more;
       pageToken = result.page_token;
@@ -119,7 +144,7 @@ class Core {
   batchGetTempDownloadUrl = async (
     fileTokens: string[]
   ): Promise<{ fileToken: string; url: string }[]> => {
-    const ret = [];
+    const ret: { fileToken: string; url: string }[] = [];
     const takeFive = this.#takeN(fileTokens, 5);
     let buf;
     const http = axiosRateLimit(axios.create(), { maxRPS: 5 });

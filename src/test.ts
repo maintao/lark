@@ -7,12 +7,14 @@ console.log(appId, appSecret);
 
 const feishu = new Feishu({ appId, appSecret });
 
-const appToken = "MropbG4s1aCWW5sb7yFcSx9FnTg"; // 多维表格网址 base 后的路径部分
-const tableId = "tbl89w73Li2MFBc9"; // 多维表格网址 table 参数的值
-
 (async () => {
+  const appToken = "FWY4bUoK5a5PoRsfIVmcF2tZnu3"; // 多维表格网址 base 后的路径部分
+  const tableId = "tblnxYIS3ryJIXPh"; // 多维表格网址 table 参数的值
+  const viewId = "vewFvaePw6"; // 多维表格网址 view 参数的值
+
   let result;
-  result = await feishu.getBiTableAllData({ appToken, tableId });
+  result = await feishu.getBiTableAllData({ appToken, tableId, viewId });
+  // result = await feishu.getBiTableAllData({ appToken, tableId });
   console.log("getBiTableAllData", JSON.stringify(result, null, 2));
 
   console.log(new Date());
@@ -25,6 +27,6 @@ const tableId = "tbl89w73Li2MFBc9"; // 多维表格网址 table 参数的值
     "H7kPbSCRkotmYXxPQ6icSIXRnHb",
   ]);
 
-  console.log(JSON.stringify(result, null, 2));
+  // console.log(JSON.stringify(result, null, 2));
   console.log(result.length);
 })();

@@ -39,22 +39,41 @@ class Core {
             this.accessToken.expireAt = Date.now() + response.data.expire * 1000; // 秒变成毫秒
             return this.accessToken.value;
         };
-        this.getBiTablePage = async ({ appToken, tableId, pageToken, }) => {
-            const response = await axios_1.default.get(`${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`, {
-                params: {
-                    page_size: 500,
-                    pageToken,
-                },
+        this.getBiTablePage = async ({ appToken, tableId, viewId, pageToken, mergeText = true, // 是否把文本类型的字符串数组合并成一个字符串
+         }) => {
+            // 接口文档 https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/bitable-v1/app-table-record/search
+            const apiUrl = `${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records/search`;
+            const response = await (0, axios_1.default)({
+                method: "post",
+                url: apiUrl,
                 headers: {
                     Authorization: `Bearer ${await this.getAccessToken()}`,
+                },
+                params: {
+                    page_size: 500,
+                    page_token: pageToken,
+                },
+                data: {
+                    view_id: viewId,
                 },
             });
             if (response.data.code !== 0) {
                 throw new Error("获取飞书多维表格数据失败");
             }
+            // console.log(response.data.data.items.map((item: any) => item.fields));
+            if (mergeText) {
+                response.data.data.items.forEach((item) => {
+                    Object.entries(item.fields).forEach(([key, value]) => {
+                        if (Array.isArray(value) && value.every((f) => f.type === "text")) {
+                            item.fields[key] = value.map((f) => f.text).join("");
+                        }
+                    });
+                });
+            }
+            // console.log(response.data.data.items.map((item: any) => item.fields));
             return response.data.data;
         };
-        this.getBiTableAllData = async ({ appToken, tableId, }) => {
+        this.getBiTableAllData = async ({ appToken, tableId, viewId, mergeText = true, }) => {
             const ret = [];
             let pageToken;
             let hasMore = true;
@@ -62,7 +81,9 @@ class Core {
                 const result = await this.getBiTablePage({
                     appToken,
                     tableId,
+                    viewId,
                     pageToken,
+                    mergeText,
                 });
                 hasMore = result.has_more;
                 pageToken = result.page_token;

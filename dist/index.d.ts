@@ -13,15 +13,19 @@ declare class Core {
         apiDomain: string;
     });
     getAccessToken: () => Promise<string>;
-    getBiTablePage: ({ appToken, tableId, pageToken, }: {
+    getBiTablePage: ({ appToken, tableId, viewId, pageToken, mergeText, }: {
         appToken: string;
         tableId: string;
+        viewId?: string | undefined;
         pageToken?: string | undefined;
+        mergeText?: boolean | undefined;
     }) => Promise<any>;
-    getBiTableAllData: ({ appToken, tableId, }: {
+    getBiTableAllData: ({ appToken, tableId, viewId, mergeText, }: {
         appToken: string;
         tableId: string;
-    }) => Promise<any>;
+        viewId?: string | undefined;
+        mergeText?: boolean | undefined;
+    }) => Promise<any[]>;
     batchGetTempDownloadUrl: (fileTokens: string[]) => Promise<{
         fileToken: string;
         url: string;
