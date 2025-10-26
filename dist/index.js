@@ -39,7 +39,7 @@ class Core {
             this.accessToken.expireAt = Date.now() + response.data.expire * 1000; // 秒变成毫秒
             return this.accessToken.value;
         };
-        this.getBiTablePage = async ({ appToken, tableId, viewId, pageToken, mergeText = true, // 是否把文本类型的字符串数组合并成一个字符串
+        this.getBiTablePage = async ({ appToken, tableId, viewId, fieldNames, pageToken, mergeText = true, // 是否把文本类型的字符串数组合并成一个字符串
          }) => {
             // 接口文档 https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/bitable-v1/app-table-record/search
             const apiUrl = `${this.apiDomain}/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records/search`;
@@ -55,6 +55,7 @@ class Core {
                 },
                 data: {
                     view_id: viewId,
+                    field_names: fieldNames,
                 },
             });
             if (response.data.code !== 0) {
@@ -73,7 +74,7 @@ class Core {
             // console.log(response.data.data.items.map((item: any) => item.fields));
             return response.data.data;
         };
-        this.getBiTableAllData = async ({ appToken, tableId, viewId, mergeText = true, }) => {
+        this.getBiTableAllData = async ({ appToken, tableId, viewId, fieldNames, mergeText = true, }) => {
             const ret = [];
             let pageToken;
             let hasMore = true;
@@ -82,6 +83,7 @@ class Core {
                     appToken,
                     tableId,
                     viewId,
+                    fieldNames,
                     pageToken,
                     mergeText,
                 });
