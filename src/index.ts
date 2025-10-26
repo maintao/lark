@@ -53,12 +53,14 @@ class Core {
     appToken,
     tableId,
     viewId,
+    fieldNames,
     pageToken,
     mergeText = true, // 是否把文本类型的字符串数组合并成一个字符串
   }: {
     appToken: string;
     tableId: string;
     viewId?: string;
+    fieldNames?: string[];
     pageToken?: string;
     mergeText?: boolean;
   }): Promise<any> => {
@@ -76,6 +78,7 @@ class Core {
       },
       data: {
         view_id: viewId,
+        field_names: fieldNames,
       },
     });
 
@@ -101,11 +104,13 @@ class Core {
     appToken,
     tableId,
     viewId,
+    fieldNames,
     mergeText = true,
   }: {
     appToken: string;
     tableId: string;
     viewId?: string;
+    fieldNames?: string[];
     mergeText?: boolean;
   }): Promise<any[]> => {
     const ret: any[] = [];
@@ -117,6 +122,7 @@ class Core {
         appToken,
         tableId,
         viewId,
+        fieldNames,
         pageToken,
         mergeText,
       });
